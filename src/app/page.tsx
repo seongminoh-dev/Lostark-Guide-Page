@@ -1,101 +1,154 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, useEffect } from "react";
+import Cookies from "js-cookie";
+
+export default function Page() {
+  const [characterName, setCharacterName] = useState("");
+  const [apiKey, setApiKey] = useState(Cookies.get("api_key") || "");
+  const [characters, setCharacters] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!apiKey) {
+      alert("API 키를 입력하세요.");
+    }
+  }, [apiKey]);
+
+  const handleApiKeySubmit = () => {
+    if (apiKey) {
+      Cookies.set("api_key", apiKey, { expires: 7 }); // 7일 동안 쿠키 저장
+      alert("API 키가 저장되었습니다.");
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!apiKey) {
+      setError("API 키가 없습니다. 먼저 API 키를 입력하세요.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/characters/${characterName}`, {
+        headers: {
+          "x-api-key": apiKey,
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch data");
+      }
+
+      const data = await res.json();
+      setCharacters(data);
+    } catch (err: any) {
+      setError(err.message || "Error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 px-4">
+      <div className="max-w-3xl w-full bg-white shadow-lg rounded-lg p-8">
+        <h1 className="text-4xl font-bold text-gray-800 text-center mb-8">
+          캐릭터 정보 검색
+        </h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+        {!apiKey && (
+          <div className="mb-6">
+            <input
+              type="text"
+              className="border border-gray-300 p-3 rounded-lg w-full mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="API 키를 입력하세요"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <button
+              onClick={handleApiKeySubmit}
+              className="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 w-full shadow-md transition"
+            >
+              API 키 저장
+            </button>
+          </div>
+        )}
+
+        {apiKey && (
+          <form onSubmit={handleSubmit} className="flex gap-4 mb-8">
+            <input
+              type="text"
+              className="flex-1 border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+              value={characterName}
+              onChange={(e) => setCharacterName(e.target.value)}
+              placeholder="닉네임을 입력하세요"
+            />
+            <button
+              type="submit"
+              className="bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 shadow-md transition"
+            >
+              검색
+            </button>
+          </form>
+        )}
+
+        {loading && (
+          <div className="text-center text-gray-500 font-medium">
+            로딩 중입니다...
+          </div>
+        )}
+        {error && (
+          <div className="text-center text-red-500 font-medium">{error}</div>
+        )}
+
+        {characters && characters.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse bg-white shadow-md mt-6">
+              <thead>
+                <tr className="bg-purple-500 text-white text-left">
+                  <th className="py-3 px-4">서버명</th>
+                  <th className="py-3 px-4">캐릭터 이름</th>
+                  <th className="py-3 px-4">레벨</th>
+                  <th className="py-3 px-4">클래스</th>
+                  <th className="py-3 px-4">평균 아이템 레벨</th>
+                  <th className="py-3 px-4">최대 아이템 레벨</th>
+                </tr>
+              </thead>
+              <tbody>
+                {characters.map((char, i) => (
+                  <tr
+                    key={i}
+                    className={`${
+                      i % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    } hover:bg-purple-100 transition`}
+                  >
+                    <td className="py-3 px-4 border">{char.ServerName}</td>
+                    <td className="py-3 px-4 border">{char.CharacterName}</td>
+                    <td className="py-3 px-4 border">{char.CharacterLevel}</td>
+                    <td className="py-3 px-4 border">
+                      {char.CharacterClassName}
+                    </td>
+                    <td className="py-3 px-4 border">{char.ItemAvgLevel}</td>
+                    <td className="py-3 px-4 border">{char.ItemMaxLevel}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {!loading && !error && characters.length === 0 && apiKey && (
+          <div className="text-center text-gray-500 mt-6">
+            닉네임을 검색하여 결과를 확인하세요.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+

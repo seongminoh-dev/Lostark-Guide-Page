@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Tailwind 유틸리티를 사용할 경우, 아래 스타일을 제거 또는 수정 */
+:root {
+  --background-light: #ffffff;
+  --background-dark: #0a0a0a;
+  --foreground-light: #171717;
+  --foreground-dark: #ededed;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--background-dark);
+    --foreground: var(--foreground-dark);
+  }
+}
+
+body {
+  /* 기본 스타일은 Tailwind 유틸리티를 보완하도록 설정 */
+  font-family: Arial, Helvetica, sans-serif;
+}
