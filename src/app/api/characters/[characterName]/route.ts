@@ -1,17 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { characterName: string } } // 올바른 타입 정의
+  { params }: { params: { characterName: string } } // 정확한 타입 정의
 ) {
-  const { params } = context;
-  const characterName = params.characterName;
+  const { characterName } = params;
 
   const apiKey = process.env.LA_API_KEY;
 
   if (!apiKey) {
     return NextResponse.json(
-      { error: 'API key is not set' },
+      { error: "API key is not set" },
       { status: 500 }
     );
   }
@@ -23,15 +22,15 @@ export async function GET(
   try {
     const res = await fetch(url, {
       headers: {
-        accept: 'application/json',
+        accept: "application/json",
         authorization: `bearer ${apiKey}`,
       },
-      cache: 'no-store',
+      cache: "no-store",
     });
 
     if (!res.ok) {
       return NextResponse.json(
-        { error: 'Failed to fetch data from external API' },
+        { error: "Failed to fetch data from external API" },
         { status: res.status }
       );
     }
@@ -40,8 +39,9 @@ export async function GET(
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json(
-      { error: 'An unexpected error occurred' },
+      { error: "An unexpected error occurred" },
       { status: 500 }
     );
   }
 }
+
