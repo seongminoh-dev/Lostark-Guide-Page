@@ -1,16 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
-  request: Request,
-  context: { params: { characterName: string } }
+  request: NextRequest,
+  context: { params: { characterName: string } } // 올바른 타입 정의
 ) {
-  const { characterName } = context.params;
-  const apiKey = request.headers.get("x-api-key"); // 헤더에서 API 키 가져오기
+  const { params } = context;
+  const characterName = params.characterName;
+
+  const apiKey = process.env.LA_API_KEY;
 
   if (!apiKey) {
     return NextResponse.json(
-      { error: "API key is missing" },
-      { status: 400 }
+      { error: 'API key is not set' },
+      { status: 500 }
     );
   }
 
@@ -18,19 +20,28 @@ export async function GET(
     characterName
   )}/siblings`;
 
-  const res = await fetch(url, {
-    headers: {
-      accept: "application/json",
-      authorization: `bearer ${apiKey}`,
-    },
-    cache: "no-store",
-  });
+  try {
+    const res = await fetch(url, {
+      headers: {
+        accept: 'application/json',
+        authorization: `bearer ${apiKey}`,
+      },
+      cache: 'no-store',
+    });
 
-  if (!res.ok) {
-    return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
+    if (!res.ok) {
+      return NextResponse.json(
+        { error: 'Failed to fetch data from external API' },
+        { status: res.status }
+      );
+    }
+
+    const data = await res.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'An unexpected error occurred' },
+      { status: 500 }
+    );
   }
-
-  const data = await res.json();
-  return NextResponse.json(data);
 }
-
